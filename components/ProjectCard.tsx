@@ -1,0 +1,1 @@
+export default function ProjectCard({project}:any){return <div style={{border:"1px solid #333",padding:20,marginBottom:20,borderRadius:20}}><h2>{project.title}</h2><p>{project.description}</p></div>}
