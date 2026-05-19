@@ -171,13 +171,13 @@ h1{
 
 .red-mark{
   position:absolute;
-  width:min(76vw,920px);
-  height:min(54vw,620px);
-  left:10%;
-  top:24%;
+  width:100vw;
+  height:72vw;
+  left:50%;
+  top:18%;
   z-index:1;
   opacity:.96;
-  background-image:url("/custom-mark.png");
+  background-image:url("/hero-graphic.png");
   background-repeat:no-repeat;
   background-position:center;
   background-size:contain;
@@ -407,10 +407,10 @@ h1{
   }
 
   .red-mark{
-    width:120vw;
-    height:64vw;
-    left:-18%;
-    top:30%;
+    width:112vw;
+    height:82vw;
+    left:50%;
+    top:26%;
   }
 
   .portrait-section{
