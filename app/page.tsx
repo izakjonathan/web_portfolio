@@ -1,2 +1,0 @@
-import ProjectCard from "../components/ProjectCard"; import {projects} from "../data/projects";
-export default function Page(){return <div><h1>IZAK HYLLESTED</h1>{projects.map((p,i)=><ProjectCard key={i} project={p}/> )}</div>}
