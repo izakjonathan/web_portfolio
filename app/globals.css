@@ -181,7 +181,7 @@ h1{
   background-repeat:no-repeat;
   background-position:center;
   background-size:contain;
-  transform:rotate(-4deg) translate3d(calc(var(--mx) * 12px), calc(var(--my) * 8px), 0);
+  transform:translateX(-50%) translate3d(calc(var(--mx) * 12px), calc(var(--my) * 8px), 0);
   mix-blend-mode:lighten;
   filter:saturate(1.18) contrast(1.08);
   pointer-events:none;
