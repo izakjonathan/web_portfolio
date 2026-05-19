@@ -1,1 +1,0 @@
-export default function RootLayout({children}:{children:React.ReactNode}){return <html><body style={{background:"#000",color:"#fff",fontFamily:"Arial",margin:0,padding:40}}>{children}</body></html>}
