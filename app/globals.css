@@ -299,9 +299,7 @@ h1{
 /* HERO GRAPHIC */
 
 .red-mark{
-  position:absolute;
-
-  top:-6vh;
+  top:-3vh;
 
   left:50%;
 
@@ -309,14 +307,14 @@ h1{
 
   margin-left:-50vw;
 
-  z-index:1;
-
-  pointer-events:none;
-
   overflow:visible;
 
   transform:
-    translateY(calc(var(--scroll-offset) * 0.12));
+    translate3d(
+      0,
+      calc(var(--scroll-offset) * 0.22),
+      0
+    );
 
   will-change:transform;
 }
@@ -817,7 +815,7 @@ h1{
   *,
   *::before,
   *::after{
-    animation-duration:.001ms !important;
+    animation-duration:.001ms !important
     animation-iteration-count:1 !important;
     transition-duration:.001ms !important;
     scroll-behavior:auto !important;
