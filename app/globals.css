@@ -502,7 +502,7 @@ h1{
     margin-left:-50vw;
     overflow:visible;
     transform:
-      translateY(calc(var(--scroll-offset) * 0.08));
+      translateY(calc(var(--scroll-offset) * 0.3));
   }
 
   .red-mark img{
