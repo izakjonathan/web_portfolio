@@ -7,16 +7,16 @@ export default function ProjectsPage() {
     <>
       <Nav />
 
-      <main className="main">
+      <main className="main site is-ready">
         <section className="projects-page">
-          <div className="hero-meta reveal reveal-1">
+          <div className="hero-meta">
             <span>01 / ARCHIVE</span>
             <span>Selected work</span>
           </div>
 
-          <h1 className="archive-title reveal reveal-2">Projects</h1>
+          <h1 className="archive-title">Projects</h1>
 
-          <div className="project-list reveal reveal-4">
+          <div className="project-list">
             {projects.map((project, index) => (
               <ProjectRow key={project.title} project={project} index={index} />
             ))}

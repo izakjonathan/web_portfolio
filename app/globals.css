@@ -19,10 +19,14 @@ html,
 body{
   margin:0;
   padding:0;
+
   background:var(--bg);
   color:var(--fg);
+
   font-family:Arial,Helvetica,sans-serif;
+
   overflow-x:hidden;
+
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
@@ -299,6 +303,8 @@ h1{
 /* HERO GRAPHIC */
 
 .red-mark{
+  position:absolute;
+
   top:-3vh;
 
   left:50%;
@@ -306,6 +312,10 @@ h1{
   width:100vw;
 
   margin-left:-50vw;
+
+  z-index:1;
+
+  pointer-events:none;
 
   overflow:visible;
 
@@ -695,8 +705,6 @@ h1{
     font-size:20px;
   }
 
-  /* TRUE FULL BLEED GRAPHIC */
-
   .red-mark{
     top:-3vh;
 
@@ -723,8 +731,6 @@ h1{
 
     object-fit:cover;
   }
-
-  /* TRUE FULL BLEED PORTRAIT */
 
   .portrait-section{
     position:relative;
@@ -796,7 +802,7 @@ h1{
   .about-strip a{
     justify-self:start;
   }
--
+
   .grain{
     animation:none;
     opacity:.025;

@@ -12,7 +12,7 @@ export default function ProjectRow({ project, index }) {
 
       <div className="project-side">
         <span>{project.category}</span>
-        <span>View</span>
+        <span>{project.year}</span>
       </div>
     </article>
   );
