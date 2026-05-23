@@ -4,19 +4,17 @@ import { projects } from "../../data/projects";
 
 export default function ProjectsPage() {
   return (
-    <div className="app-layers">
-      <div className="l3-graphic-layer" aria-hidden="true">
-        <img src="/hero-graphic.png" alt="" className="l3-graphic-image" />
-      </div>
+    <>
+      <Nav />
 
-      <main className="main l2-text-layer archive-site content-blend">
+      <main className="main site is-ready">
         <section className="projects-page">
-          <div className="hero-meta">
+          <div className="hero-meta blend-text">
             <span>01 / ARCHIVE</span>
             <span>Selected work</span>
           </div>
 
-          <h1 className="archive-title">Projects</h1>
+          <h1 className="archive-title blend-text">Projects</h1>
 
           <div className="project-list">
             {projects.map((project, index) => (
@@ -25,10 +23,6 @@ export default function ProjectsPage() {
           </div>
         </section>
       </main>
-
-      <div className="l1-menu-layer">
-        <Nav />
-      </div>
-    </div>
+    </>
   );
 }

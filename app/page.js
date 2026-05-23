@@ -10,10 +10,23 @@ import { projects } from "../data/projects";
 export default function Home() {
   const [splashLeaving, setSplashLeaving] = useState(false);
   const [splashGone, setSplashGone] = useState(false);
+
+  const graphicRef = useRef(null);
   const portraitRef = useRef(null);
 
   useEffect(() => {
     const root = document.documentElement;
+
+    /*
+      Hard fix:
+      - Move the .red-mark wrapper, NOT the image.
+      - Keep image centering permanently in CSS.
+      - Use a strong enough scroll delta that the effect is clearly visible.
+      - Do not rely only on refs; use querySelector fallback if hydration timing changes.
+    */
+
+    const getGraphic = () => graphicRef.current || document.querySelector(".red-mark");
+    const getPortrait = () => portraitRef.current || document.querySelector(".portrait");
 
     let running = true;
     let raf = null;
@@ -21,20 +34,16 @@ export default function Home() {
 
     let targetGraphicY = 0;
     let currentGraphicY = 0;
+
     let targetPortraitY = 0;
     let currentPortraitY = 0;
-
-    const setViewport = () => {
-      root.style.setProperty("--app-height", `${window.innerHeight}px`);
-      root.style.setProperty("--vv-top", `${window.visualViewport?.offsetTop || 0}px`);
-    };
 
     const updateTargets = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const isMobile = window.innerWidth <= 800;
 
-      targetGraphicY = scrollY * (isMobile ? -0.16 : -0.12);
-      targetPortraitY = scrollY * (isMobile ? -0.08 : -0.06);
+      targetGraphicY = scrollY * (isMobile ? -0.42 : -0.28);
+      targetPortraitY = scrollY * (isMobile ? -0.10 : -0.08);
 
       raf = null;
     };
@@ -42,20 +51,27 @@ export default function Home() {
     const animate = () => {
       if (!running) return;
 
-      currentGraphicY += (targetGraphicY - currentGraphicY) * 0.09;
-      currentPortraitY += (targetPortraitY - currentPortraitY) * 0.07;
+      const graphic = getGraphic();
+      const portrait = getPortrait();
 
-      root.style.setProperty("--graphic-y", `${currentGraphicY.toFixed(2)}px`);
+      currentGraphicY += (targetGraphicY - currentGraphicY) * 0.10;
+      currentPortraitY += (targetPortraitY - currentPortraitY) * 0.075;
 
-      if (portraitRef.current) {
-        portraitRef.current.style.transform = `translate3d(0, ${currentPortraitY.toFixed(2)}px, 0)`;
+      if (graphic) {
+        graphic.style.transform = `translate3d(0, ${currentGraphicY.toFixed(2)}px, 0)`;
+      }
+
+      if (portrait) {
+        portrait.style.transform = `translate3d(0, ${currentPortraitY.toFixed(2)}px, 0)`;
       }
 
       loop = requestAnimationFrame(animate);
     };
 
     const handleScroll = () => {
-      if (!raf) raf = requestAnimationFrame(updateTargets);
+      if (!raf) {
+        raf = requestAnimationFrame(updateTargets);
+      }
     };
 
     const handlePointer = (event) => {
@@ -68,13 +84,21 @@ export default function Home() {
 
     const finishSplash = () => {
       setSplashLeaving(true);
-      window.setTimeout(() => setSplashGone(true), 820);
+
+      window.setTimeout(() => {
+        document.querySelector(".site")?.classList.add("is-ready");
+        setSplashGone(true);
+      }, 820);
     };
 
     const waitForPage = async () => {
-      const minimumTime = new Promise((resolve) => window.setTimeout(resolve, 1200));
+      const minimumTime = new Promise((resolve) => {
+        window.setTimeout(resolve, 1850);
+      });
+
       const imageLoads = Array.from(document.images).map((img) => {
         if (img.complete) return Promise.resolve();
+
         return new Promise((resolve) => {
           img.addEventListener("load", resolve, { once: true });
           img.addEventListener("error", resolve, { once: true });
@@ -90,35 +114,24 @@ export default function Home() {
       }
     };
 
-    setViewport();
     updateTargets();
     animate();
     waitForPage();
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("touchmove", handleScroll, { passive: true });
-    window.addEventListener("resize", () => { setViewport(); handleScroll(); }, { passive: true });
-    window.addEventListener("orientationchange", () => { setViewport(); handleScroll(); }, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    window.addEventListener("orientationchange", handleScroll, { passive: true });
     window.addEventListener("pointermove", handlePointer, { passive: true });
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", setViewport, { passive: true });
-      window.visualViewport.addEventListener("scroll", setViewport, { passive: true });
-    }
 
     return () => {
       running = false;
 
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("touchmove", handleScroll);
-      window.removeEventListener("resize", setViewport);
-      window.removeEventListener("orientationchange", setViewport);
+      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener("orientationchange", handleScroll);
       window.removeEventListener("pointermove", handlePointer);
-
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", setViewport);
-        window.visualViewport.removeEventListener("scroll", setViewport);
-      }
 
       if (raf) cancelAnimationFrame(raf);
       if (loop) cancelAnimationFrame(loop);
@@ -137,107 +150,97 @@ export default function Home() {
         </div>
       )}
 
-      <div className="app-layers">
-        <div className="l4-image-layer" aria-hidden="true">
+      <Nav />
+
+      <main className="main site">
+        <section className="hero">
+          <div ref={graphicRef} className="red-mark" aria-hidden="true">
+            <img src="/hero-graphic.png" alt="" className="red-mark-image" />
+          </div>
+
+          <div className="hero-meta reveal reveal-1 blend-text">
+            <span>00 / MMXXVI</span>
+            <span>Copenhagen</span>
+          </div>
+
+          <div className="hero-title-wrap reveal reveal-2">
+            <h1 className="hero-title blend-text">
+              Graphic
+              <br />
+              Designer &
+              <br />
+              Creative
+              <br />
+              Developer
+            </h1>
+          </div>
+
+          <div className="hero-grid reveal reveal-4 blend-text">
+            <div>
+              <div className="label">WHO</div>
+              <p>Izak Hyllested</p>
+            </div>
+
+            <div>
+              <div className="label">WHAT</div>
+              <p>
+                Interactive Systems
+                <br />
+                Identity
+                <br />
+                Frontend
+              </p>
+            </div>
+
+            <div>
+              <div className="label">WHEN</div>
+              <p>Available</p>
+            </div>
+
+            <div>
+              <div className="label">HOW</div>
+              <p>Design + Code</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="portrait-section reveal">
           <img
             ref={portraitRef}
             src="/profile.jpg"
-            alt=""
             className="portrait"
+            alt="Izak Hyllested"
           />
-        </div>
 
-        <div className="l3-graphic-layer" aria-hidden="true">
-          <img src="/hero-graphic.png" alt="" className="l3-graphic-image" />
-        </div>
+          <div className="portrait-caption">
+            <span>Portrait / Profile</span>
+            <span>Graphic Design + Web Development</span>
+          </div>
+        </section>
 
-        <main className="main l2-text-layer content-blend">
-          <section className="hero">
-            <div className="hero-meta">
-              <span>00 / MMXXVI</span>
-              <span>Copenhagen</span>
-            </div>
+        <section className="projects-section">
+          <div className="section-top reveal">
+            <span>01 / SELECTED WORK</span>
+            <Link href="/projects">Full Archive →</Link>
+          </div>
 
-            <div className="hero-title-wrap">
-              <h1 className="hero-title">
-                Graphic
-                <br />
-                Designer &
-                <br />
-                Creative
-                <br />
-                Developer
-              </h1>
-            </div>
+          <div className="project-list">
+            {projects.map((project, index) => (
+              <ProjectRow key={project.title} project={project} index={index} />
+            ))}
+          </div>
+        </section>
 
-            <div className="hero-grid">
-              <div>
-                <div className="label">WHO</div>
-                <p>Izak Hyllested</p>
-              </div>
+        <section className="about-strip reveal blend-text" id="about">
+          <p>
+            I build visual systems, mobile-first web apps, editorial interfaces
+            and experimental digital identities with a focus on typography,
+            atmosphere and interaction.
+          </p>
 
-              <div>
-                <div className="label">WHAT</div>
-                <p>
-                  Interactive Systems
-                  <br />
-                  Identity
-                  <br />
-                  Frontend
-                </p>
-              </div>
-
-              <div>
-                <div className="label">WHEN</div>
-                <p>Available</p>
-              </div>
-
-              <div>
-                <div className="label">HOW</div>
-                <p>Design + Code</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="portrait-section">
-            <div className="portrait-spacer" />
-
-            <div className="portrait-caption">
-              <span>Portrait / Profile</span>
-              <span>Graphic Design + Web Development</span>
-            </div>
-          </section>
-
-          <section className="projects-section">
-            <div className="section-top">
-              <span>01 / SELECTED WORK</span>
-              <Link href="/projects">Full Archive →</Link>
-            </div>
-
-            <div className="project-list">
-              {projects.map((project, index) => (
-                <ProjectRow key={project.title} project={project} index={index} />
-              ))}
-            </div>
-          </section>
-
-          <section className="about-strip" id="about">
-            <p>
-              I build visual systems, mobile-first web apps, editorial interfaces
-              and experimental digital identities with a focus on typography,
-              atmosphere and interaction.
-            </p>
-
-            <a href="mailto:izakhyllested@icloud.com">
-              Start a project →
-            </a>
-          </section>
-        </main>
-
-        <div className="l1-menu-layer">
-          <Nav />
-        </div>
-      </div>
+          <a href="mailto:izakhyllested@icloud.com">Start a project →</a>
+        </section>
+      </main>
     </>
   );
 }
