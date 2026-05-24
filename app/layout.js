@@ -6,17 +6,13 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#000000",
 };
 
 export const metadata = {
   title: "Izak Hyllested",
   description: "Graphic Designer & Creative Developer",
-  appleWebApp: {
-    capable: true,
-    title: "Izak Hyllested",
-    statusBarStyle: "black-translucent",
-  },
+  appleWebApp: { capable: true, title: "Izak Hyllested", statusBarStyle: "black-translucent" },
 };
 
 export default function RootLayout({ children }) {

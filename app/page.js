@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-
 import Nav from "../components/Nav";
 import ProjectRow from "../components/ProjectRow";
 import { projects } from "../data/projects";
@@ -10,129 +9,76 @@ import { projects } from "../data/projects";
 export default function Home() {
   const [splashLeaving, setSplashLeaving] = useState(false);
   const [splashGone, setSplashGone] = useState(false);
-
   const graphicRef = useRef(null);
   const portraitRef = useRef(null);
 
   useEffect(() => {
     const root = document.documentElement;
-
-    /*
-      Hard fix:
-      - Move the .red-mark wrapper, NOT the image.
-      - Keep image centering permanently in CSS.
-      - Use a strong enough scroll delta that the effect is clearly visible.
-      - Do not rely only on refs; use querySelector fallback if hydration timing changes.
-    */
-
-    const getGraphic = () => graphicRef.current || document.querySelector(".red-mark");
-    const getPortrait = () => portraitRef.current || document.querySelector(".portrait");
-
     let running = true;
     let raf = null;
     let loop = null;
-
     let targetGraphicY = 0;
     let currentGraphicY = 0;
-
     let targetPortraitY = 0;
     let currentPortraitY = 0;
+
+    const setViewport = () => {
+      const height = window.visualViewport?.height || window.innerHeight;
+      root.style.setProperty("--app-height", `${height}px`);
+    };
 
     const updateTargets = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const isMobile = window.innerWidth <= 800;
-
-      targetGraphicY = scrollY * (isMobile ? -0.42 : -0.28);
-      targetPortraitY = scrollY * (isMobile ? -0.10 : -0.08);
-
+      targetGraphicY = scrollY * (isMobile ? -0.12 : -0.08);
+      targetPortraitY = scrollY * (isMobile ? -0.06 : -0.045);
       raf = null;
     };
 
     const animate = () => {
       if (!running) return;
-
-      const graphic = getGraphic();
-      const portrait = getPortrait();
-
-      currentGraphicY += (targetGraphicY - currentGraphicY) * 0.10;
-      currentPortraitY += (targetPortraitY - currentPortraitY) * 0.075;
-
-      if (graphic) {
-        graphic.style.transform = `translate3d(0, ${currentGraphicY.toFixed(2)}px, 0)`;
-      }
-
-      if (portrait) {
-        portrait.style.transform = `translate3d(0, ${currentPortraitY.toFixed(2)}px, 0)`;
-      }
-
+      currentGraphicY += (targetGraphicY - currentGraphicY) * 0.08;
+      currentPortraitY += (targetPortraitY - currentPortraitY) * 0.065;
+      if (graphicRef.current) graphicRef.current.style.transform = `translate3d(-50%, ${currentGraphicY.toFixed(2)}px, 0)`;
+      if (portraitRef.current) portraitRef.current.style.transform = `translate3d(0, ${currentPortraitY.toFixed(2)}px, 0)`;
       loop = requestAnimationFrame(animate);
     };
 
-    const handleScroll = () => {
-      if (!raf) {
-        raf = requestAnimationFrame(updateTargets);
-      }
-    };
-
+    const handleScroll = () => { if (!raf) raf = requestAnimationFrame(updateTargets); };
     const handlePointer = (event) => {
       const x = (event.clientX / window.innerWidth - 0.5) * 2;
       const y = (event.clientY / window.innerHeight - 0.5) * 2;
-
       root.style.setProperty("--mx", x.toFixed(3));
       root.style.setProperty("--my", y.toFixed(3));
     };
-
-    const finishSplash = () => {
-      setSplashLeaving(true);
-
-      window.setTimeout(() => {
-        document.querySelector(".site")?.classList.add("is-ready");
-        setSplashGone(true);
-      }, 820);
-    };
-
+    const finishSplash = () => { setSplashLeaving(true); window.setTimeout(() => setSplashGone(true), 620); };
     const waitForPage = async () => {
-      const minimumTime = new Promise((resolve) => {
-        window.setTimeout(resolve, 1850);
-      });
-
+      const minimumTime = new Promise((resolve) => window.setTimeout(resolve, 750));
       const imageLoads = Array.from(document.images).map((img) => {
         if (img.complete) return Promise.resolve();
-
-        return new Promise((resolve) => {
-          img.addEventListener("load", resolve, { once: true });
-          img.addEventListener("error", resolve, { once: true });
-        });
+        return new Promise((resolve) => { img.addEventListener("load", resolve, { once: true }); img.addEventListener("error", resolve, { once: true }); });
       });
-
       await Promise.all([minimumTime, ...imageLoads]);
-
-      if (document.readyState === "complete") {
-        finishSplash();
-      } else {
-        window.addEventListener("load", finishSplash, { once: true });
-      }
+      if (document.readyState === "complete") finishSplash(); else window.addEventListener("load", finishSplash, { once: true });
     };
 
-    updateTargets();
-    animate();
-    waitForPage();
-
+    setViewport(); updateTargets(); animate(); waitForPage();
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("touchmove", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-    window.addEventListener("orientationchange", handleScroll, { passive: true });
+    window.addEventListener("resize", setViewport, { passive: true });
+    window.addEventListener("orientationchange", setViewport, { passive: true });
     window.addEventListener("pointermove", handlePointer, { passive: true });
-
+    window.visualViewport?.addEventListener("resize", setViewport, { passive: true });
+    window.visualViewport?.addEventListener("scroll", setViewport, { passive: true });
     return () => {
       running = false;
-
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("touchmove", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-      window.removeEventListener("orientationchange", handleScroll);
+      window.removeEventListener("resize", setViewport);
+      window.removeEventListener("orientationchange", setViewport);
       window.removeEventListener("pointermove", handlePointer);
-
+      window.visualViewport?.removeEventListener("resize", setViewport);
+      window.visualViewport?.removeEventListener("scroll", setViewport);
       if (raf) cancelAnimationFrame(raf);
       if (loop) cancelAnimationFrame(loop);
     };
@@ -140,106 +86,25 @@ export default function Home() {
 
   return (
     <>
-      {!splashGone && (
-        <div className={splashLeaving ? "splash is-leaving" : "splash"}>
-          <div className="splash-name">
-            IZAK
-            <br />
-            HYLLESTED
-          </div>
-        </div>
-      )}
-
+      {!splashGone && <div className={splashLeaving ? "splash is-leaving" : "splash"}><div className="splash-name">IZAK<br />HYLLESTED</div></div>}
+      <div className="page-bg" aria-hidden="true" />
+      <div className="graphic-layer" aria-hidden="true"><img ref={graphicRef} src="/hero-graphic.png" alt="" className="graphic-image" /></div>
+      <div className="portrait-layer" aria-hidden="true"><img ref={portraitRef} src="/profile.jpg" alt="" className="portrait" /></div>
       <Nav />
-
-      <main className="main site">
+      <main className="main">
         <section className="hero">
-          <div ref={graphicRef} className="red-mark" aria-hidden="true">
-            <img src="/hero-graphic.png" alt="" className="red-mark-image" />
-          </div>
-
-          <div className="hero-meta reveal reveal-1 blend-text">
-            <span>00 / MMXXVI</span>
-            <span>Copenhagen</span>
-          </div>
-
-          <div className="hero-title-wrap reveal reveal-2">
-            <h1 className="hero-title blend-text">
-              Graphic
-              <br />
-              Designer &
-              <br />
-              Creative
-              <br />
-              Developer
-            </h1>
-          </div>
-
-          <div className="hero-grid reveal reveal-4 blend-text">
-            <div>
-              <div className="label">WHO</div>
-              <p>Izak Hyllested</p>
-            </div>
-
-            <div>
-              <div className="label">WHAT</div>
-              <p>
-                Interactive Systems
-                <br />
-                Identity
-                <br />
-                Frontend
-              </p>
-            </div>
-
-            <div>
-              <div className="label">WHEN</div>
-              <p>Available</p>
-            </div>
-
-            <div>
-              <div className="label">HOW</div>
-              <p>Design + Code</p>
-            </div>
+          <div className="hero-meta"><span className="blend-text">00 / MMXXVI</span><span className="blend-text">Copenhagen</span></div>
+          <div className="hero-title-wrap"><h1 className="hero-title blend-text">Graphic<br />Designer &<br />Creative<br />Developer</h1></div>
+          <div className="hero-grid">
+            <div><div className="label blend-text">WHO</div><p className="blend-text">Izak Hyllested</p></div>
+            <div><div className="label blend-text">WHAT</div><p className="blend-text">Interactive Systems<br />Identity<br />Frontend</p></div>
+            <div><div className="label blend-text">WHEN</div><p className="blend-text">Available</p></div>
+            <div><div className="label blend-text">HOW</div><p className="blend-text">Design + Code</p></div>
           </div>
         </section>
-
-        <section className="portrait-section reveal">
-          <img
-            ref={portraitRef}
-            src="/profile.jpg"
-            className="portrait"
-            alt="Izak Hyllested"
-          />
-
-          <div className="portrait-caption">
-            <span>Portrait / Profile</span>
-            <span>Graphic Design + Web Development</span>
-          </div>
-        </section>
-
-        <section className="projects-section">
-          <div className="section-top reveal">
-            <span>01 / SELECTED WORK</span>
-            <Link href="/projects">Full Archive →</Link>
-          </div>
-
-          <div className="project-list">
-            {projects.map((project, index) => (
-              <ProjectRow key={project.title} project={project} index={index} />
-            ))}
-          </div>
-        </section>
-
-        <section className="about-strip reveal blend-text" id="about">
-          <p>
-            I build visual systems, mobile-first web apps, editorial interfaces
-            and experimental digital identities with a focus on typography,
-            atmosphere and interaction.
-          </p>
-
-          <a href="mailto:izakhyllested@icloud.com">Start a project →</a>
-        </section>
+        <section className="portrait-section"><div className="portrait-spacer" /><div className="portrait-caption"><span className="blend-text">Portrait / Profile</span><span className="blend-text">Graphic Design + Web Development</span></div></section>
+        <section className="projects-section"><div className="section-top"><span className="blend-text">01 / SELECTED WORK</span><Link href="/projects" className="blend-text">Full Archive →</Link></div><div className="project-list">{projects.map((project, index) => <ProjectRow key={project.title} project={project} index={index} />)}</div></section>
+        <section className="about-strip" id="about"><p className="blend-text">I build visual systems, mobile-first web apps, editorial interfaces and experimental digital identities with a focus on typography, atmosphere and interaction.</p><a href="mailto:izakhyllested@icloud.com" className="blend-text">Start a project →</a></section>
       </main>
     </>
   );
